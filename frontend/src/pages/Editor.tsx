@@ -1,3 +1,4 @@
+import { CaptureUpdateAction } from "@excalidraw/excalidraw";
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Download, Loader2, ChevronUp, ChevronDown, Share2, History } from 'lucide-react';

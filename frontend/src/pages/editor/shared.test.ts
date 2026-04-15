@@ -1,3 +1,4 @@
+import { CaptureUpdateAction } from "@excalidraw/excalidraw";
 import { describe, expect, it } from "vitest";
 import {
   buildRemoteSceneUpdate,
@@ -70,7 +71,7 @@ describe("editor/shared scene guards", () => {
 
     expect(result.sceneUpdate).toEqual({
       collaborators,
-      commitToHistory: false,
+      captureUpdate: CaptureUpdateAction.NEVER,
     });
     expect(result.mergedElements).toBeNull();
     expect(result.shouldUpdateFiles).toBe(false);
@@ -96,7 +97,7 @@ describe("editor/shared scene guards", () => {
         localElements[0],
         pendingElements[0],
       ],
-      commitToHistory: false,
+      captureUpdate: CaptureUpdateAction.NEVER,
     });
     expect(result.mergedElements).toEqual([
       localElements[0],
@@ -120,7 +121,7 @@ describe("editor/shared scene guards", () => {
 
     expect(result.sceneUpdate).toEqual({
       files: incomingFiles,
-      commitToHistory: false,
+      captureUpdate: CaptureUpdateAction.NEVER,
     });
     expect(result.mergedElements).toBeNull();
     expect(result.nextFiles).toEqual(incomingFiles);
@@ -144,7 +145,7 @@ describe("editor/shared scene guards", () => {
         localElements[1],
         localElements[0],
       ],
-      commitToHistory: false,
+      captureUpdate: CaptureUpdateAction.NEVER,
     });
     expect(result.mergedElements).toEqual([
       localElements[1],
