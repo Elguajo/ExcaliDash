@@ -4,7 +4,7 @@ This is a customized fork of [ExcaliDash](https://github.com/ZimengXiong/ExcaliD
 
 ## Customizations in this fork:
 - **Scroll Wheel Zoom**: The mouse scroll wheel automatically zooms to the cursor without needing to hold `Ctrl`/`Cmd`.
-- **Streamlined Repository**: Removed E2E tests, GitHub Actions, and unit tests to keep the repository minimal.
+- **Streamlined Repository**: Removed GitHub Actions to keep the repository minimal.
 
 ## Getting Started
 
