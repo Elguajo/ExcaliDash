@@ -62,6 +62,7 @@ type RegisterOidcRoutesDeps = {
       clientSecret: string | null;
       redirectUri: string | null;
       idTokenSignedResponseAlg: string | null;
+      tokenEndpointAuthMethod: "none" | "client_secret_basic" | "client_secret_post" | null;
       scopes: string;
       emailClaim: string;
       emailVerifiedClaim: string;
@@ -280,8 +281,18 @@ export const registerOidcRoutes = (deps: RegisterOidcRoutesDeps) => {
   const selectTokenEndpointAuthMethod = (opts: {
     hasClientSecret: boolean;
     supported?: string[];
+    configured: "none" | "client_secret_basic" | "client_secret_post" | null;
   }): string => {
     const supported = opts.supported?.filter(Boolean);
+    if (opts.configured) {
+      if (supported && supported.length > 0 && !supported.includes(opts.configured)) {
+        throw new Error(
+          `OIDC_TOKEN_ENDPOINT_AUTH_METHOD=${opts.configured} is configured, but provider does not advertise support for it. ` +
+            `Supported methods: ${supported.join(", ")}`
+        );
+      }
+      return opts.configured;
+    }
 
     if (!opts.hasClientSecret) {
       const method = "none";
@@ -320,6 +331,7 @@ export const registerOidcRoutes = (deps: RegisterOidcRoutesDeps) => {
         const tokenEndpointAuthMethod = selectTokenEndpointAuthMethod({
           hasClientSecret: Boolean(config.oidc.clientSecret),
           supported: supportedMethods,
+          configured: config.oidc.tokenEndpointAuthMethod,
         });
         const idTokenSignedResponseAlg = resolveIdTokenSignedResponseAlg(
           config.oidc.idTokenSignedResponseAlg,

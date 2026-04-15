@@ -277,6 +277,8 @@ backend:
     - OIDC_CLIENT_ID=your-client-id
     # Optional for public clients; required for confidential clients
     # - OIDC_CLIENT_SECRET=your-client-secret
+    # Optional token endpoint auth override (useful for some IdPs/HS setups)
+    # - OIDC_TOKEN_ENDPOINT_AUTH_METHOD=client_secret_post
     # Optional override when your IdP client is configured for a non-default ID token alg
     # - OIDC_ID_TOKEN_SIGNED_RESPONSE_ALG=HS256
     - OIDC_REDIRECT_URI=https://excalidash.example.com/api/auth/oidc/callback
