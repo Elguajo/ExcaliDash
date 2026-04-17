@@ -15,6 +15,7 @@ import { io, Socket } from 'socket.io-client';
 import type { UserIdentity } from '../utils/identity';
 import { useAuth } from '../context/AuthContext';
 import { exportFromEditor } from '../utils/exportUtils';
+import { compressDroppedImagePayload, compressExcalidrawFiles } from '../utils/imageCompression';
 import * as api from '../api';
 import { useTheme } from '../context/ThemeContext';
 import {
@@ -104,18 +105,38 @@ const getImageDimensions = (file: File): Promise<{ width: number; height: number
   });
 
 const loadDroppedImageData = async (file: File): Promise<DroppedImageData> => {
-  const [dataURL, dimensions] = await Promise.all([
+  const [rawDataURL, dimensions] = await Promise.all([
     readFileAsDataURL(file),
     getImageDimensions(file),
   ]);
 
+  let dataURL = rawDataURL;
+  let mimeType = file.type || "application/octet-stream";
+  let width = dimensions.width;
+  let height = dimensions.height;
+
+  try {
+    const compressed = await compressDroppedImagePayload({
+      dataURL: rawDataURL,
+      mimeType,
+    });
+    if (compressed.changed) {
+      dataURL = compressed.dataURL;
+      mimeType = compressed.mimeType;
+      width = compressed.width || width;
+      height = compressed.height || height;
+    }
+  } catch {
+    // Keep original image payload when compression fails.
+  }
+
   return {
     fileId: createDroppedFileId(),
-    mimeType: file.type || "application/octet-stream",
+    mimeType,
     dataURL,
     created: Date.now(),
-    width: dimensions.width,
-    height: dimensions.height,
+    width,
+    height,
   };
 };
 
@@ -900,7 +921,27 @@ export const Editor: React.FC = () => {
         });
         return;
       }
-      const persistableFiles = files ?? latestFilesRef.current ?? {};
+      let persistableFiles = files ?? latestFilesRef.current ?? {};
+      const compressedFilesResult = await compressExcalidrawFiles(persistableFiles);
+      if (compressedFilesResult.changed) {
+        persistableFiles = compressedFilesResult.files;
+        if (excalidrawAPI.current && typeof excalidrawAPI.current.addFiles === "function") {
+          isSyncing.current = true;
+          try {
+            excalidrawAPI.current.addFiles(Object.values(persistableFiles));
+          } finally {
+            isSyncing.current = false;
+          }
+        }
+        latestFilesRef.current = persistableFiles;
+        lastSyncedFilesRef.current = persistableFiles;
+        if (import.meta.env.DEV) {
+          console.log("[Editor] Auto-compressed image files before save", {
+            drawingId,
+            changedFileCount: compressedFilesResult.changedIds.length,
+          });
+        }
+      }
       const filesChangedSincePersist =
         Object.keys(getFilesDelta(lastPersistedFilesRef.current || {}, persistableFiles || {}))
           .length > 0;
