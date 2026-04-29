@@ -1,38 +1,140 @@
-# ExcaliDash (Forked Edition)
+<img src="readme-assets/logoExcaliDash.png" alt="ExcaliDash Logo" width="80" height="88">
 
-This is a customized fork of [ExcaliDash](https://github.com/ZimengXiong/ExcaliDash), a self-hosted dashboard for Excalidraw. 
+# ExcaliDash
 
-## Customizations in this fork:
-- **Scroll Wheel Zoom**: The mouse scroll wheel automatically zooms to the cursor without needing to hold `Ctrl`/`Cmd`.
-- **Streamlined Repository**: Removed GitHub Actions to keep the repository minimal.
+![License](https://img.shields.io/github/license/zimengxiong/ExcaliDash)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://hub.docker.com)
 
-## Getting Started
+A self-hosted dashboard and organizer for [Excalidraw](https://github.com/excalidraw/excalidraw) with live collaboration features.
 
-To run the application locally using Docker:
+> **This is a personal fork of [ZimengXiong/ExcaliDash](https://github.com/ZimengXiong/ExcaliDash).** See [Fork Customizations](#fork-customizations) for changes specific to this fork.
+
+![](readme-assets/demo.gif)
+
+## Table of Contents
+
+- [Fork Customizations](#fork-customizations)
+- [Features](#features)
+- [Upgrading](#upgrading)
+- [Installation](#installation)
+  - [Quickstart](#quickstart)
+  - [Advanced](#advanced)
+- [Development](#development)
+- [Credits](#credits)
+
+## Fork Customizations
+
+Changes made in this fork on top of the upstream repository:
+
+- **Mouse wheel zoom to cursor** — scrolling zooms toward the cursor position without needing to hold `Ctrl`/`Cmd`. This matches the behavior most users expect from design tools.
+- **Local data directory** — Docker Compose volumes are configured to store all persistent data (database, drawings, secrets) in a local `./data` folder that is git-ignored, making backups and migrations straightforward.
+
+## Features
+
+<details>
+<summary>Persistent storage for all your drawings</summary>
+
+![](readme-assets/dashboard.png)
+
+</details>
+
+<details>
+<summary>Real time collaboration</summary>
+
+![](readme-assets/collabDemo.gif)
+
+</details>
+
+<details>
+<summary>Version history and restore</summary>
+
+Automatically retain recent drawing snapshots, preview past versions from the editor, and restore a previous state when needed.
+
+</details>
+
+<details>
+<summary>(Optional) Multi User Authentication, OIDC Support</summary>
+
+### Sign in with OIDC
+
+![](readme-assets/signInOIDC.png)
+
+### Migration from v0.3
+
+![](readme-assets/migrationScreen.png)
+
+### Admin Bootstrap
+
+![](readme-assets/adminBootstrap.png)
+
+### Admin Dashboard
+
+![](readme-assets/adminDashboard.png)
+
+</details>
+
+<details>
+<summary>Scoped internal & external sharing</summary>
+
+![](readme-assets/scoped.png)
+
+</details>
+<details>
+<summary>Search your drawings</summary>
+
+![](readme-assets/search.gif)
+
+</details>
+
+<details>
+<summary>Drag and drop drawings into collections</summary>
+
+![](readme-assets/collections.gif)
+
+</details>
+
+<details>
+<summary>Export/import your drawings for backup</summary>
+
+### Excalidash uses a non-proprietary archival format that stores your drawings in plain .excalidraw format
+
+![](readme-assets/backupsImport.gif)
+
+</details>
+
+# Upgrading
+
+See [release notes](https://github.com/ZimengXiong/ExcaliDash/releases) for a specific release.
+
+ExcaliDash includes an in-app update notifier that checks GitHub Releases. If your deployment must not make outbound network calls, disable it on the backend:
 
 ```bash
-docker compose up -d --build
+UPDATE_CHECK_OUTBOUND=false
 ```
 
-The application will be available at `http://localhost:6767`. 
+## Docker Hub Upgrades
 
-*Note: All local data (database, drawings, secrets) is safely stored in the `./data` directory which is ignored by Git.*
-
-## Updating from Upstream
-
-To pull the latest changes from the original repository:
+If you deployed using `docker-compose.prod.yml` (Docker Hub images), upgrade by pulling the latest images and recreating containers:
 
 ```bash
-# Add the original repo (only needed once)
-git remote add upstream https://github.com/ZimengXiong/ExcaliDash.git
-
-# Fetch and merge updates
-git fetch upstream
-git merge upstream/main
-
-# Push to your fork
-git push origin main
+docker compose -f docker-compose.prod.yml pull && \
+  docker compose -f docker-compose.prod.yml up -d
 ```
+
+If you prefer a clean stop/start (more downtime, but simpler), you can do:
+
+```bash
+docker compose -f docker-compose.prod.yml down && \
+  docker compose -f docker-compose.prod.yml pull && \
+  docker compose -f docker-compose.prod.yml up -d
+```
+
+Notes:
+
+- Don't add `-v` to `down` unless you intend to delete the persistent backend volume (your SQLite DB + secrets).
+- Only add `--remove-orphans` if you previously ran a different Compose file for the same project name and need to remove old/renamed services.
+
 # Installation
 
 > [!CAUTION]
@@ -416,3 +518,9 @@ Common flags:
 
 </details>
 
+# Credits
+If you find ExcaliDash useful, please consider [sponsoring](https://github.com/sponsors/ZimengXiong)
+- Example designs from:
+  - <https://github.com/Prakash-sa/system-design-ultimatum/tree/main>
+  - <https://github.com/kitsteam/excalidraw-examples/tree/main>
+- [The amazing work of Excalidraw & contributors](https://www.npmjs.com/package/@excalidraw/excalidraw)
